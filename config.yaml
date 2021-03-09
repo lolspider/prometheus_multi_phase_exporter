@@ -1,0 +1,37 @@
+
+
+global:
+  port: 9116
+  task:
+    "fetch_order_list":
+      2p_api_request:
+        phase1:
+          method: POST
+          url: "http://127.0.0.1:8080/api/token"
+          headers:
+            Content-Type: "application/json"
+          body:
+            username: "xxxxx"
+            password: "xxxxx@xxxxest"
+            client_type: "web"
+        phase2:
+          method: GET
+          url: "http://127.0.0.1:8080/api/orders?index=0&filters=%7B%22"
+          headers:
+            Authorization: ""
+    "fetch_order_list_2":
+      2p_api_request:
+        phase1:
+          method: POST
+          url: "http://127.0.0.1:8080/sapi/token"
+          headers:
+            Content-Type: "application/json"
+          body:
+            username: "xxxxx"
+            password: "xxxx"
+            client_type: "web"
+        phase2:
+          method: GET
+          url: "http://127.0.0.1:8080/api/orders?index=0&filters=%7B%22"
+          headers:
+            Authorization: ""

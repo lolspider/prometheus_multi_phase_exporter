@@ -1,0 +1,54 @@
+apiVersion: v1
+data:
+  config.yaml: |
+    global:
+      port: 9116
+      task:
+        "fetch_order_list":
+          2p_api_request:
+            phase1:
+              method: POST
+              token_parser: "jwt_token"
+              url: "http://service:8080/api/token"
+              headers:
+                Content-Type: "application/json"
+              body:
+                username: "xxxxxxx"
+                password: "xxxxxxx"
+                client_type: "web"
+            phase2:
+              method: GET
+              url: "http://service-api:8080/api/"
+              headers:
+                Authorization: ""
+        "search_from_store":
+          2p_api_request:
+            phase1:
+              method: POST
+              auth_type: BASIC
+              username: xxxxxxxxxxxxxxxxxxx
+              password: xxxxxxxxxxxxxxxxxxx
+              token_parser: "access_token"
+              url: "https://sso.xxxxxxx.com/as/token.oauth2"
+              headers:
+                Authorization: 'xxxxxxxxxxxxxxxxxxxxxxx'
+                Content-Type: 'application/x-www-form-urlencoded'
+              body:
+                grant_type: 'client_credentials'
+            phase2:
+              integration_api: true
+              method: POST
+              url: "https://xxxxxxxxxxxxxxxxxxxxx/kxxxx/v2/xxxxxxxxxx"
+              headers:
+                Authorization: ""
+                Content-Type: "application/json"
+              body: 
+                chassisNumbers: xxxxxxxxxxxxxxxxxxx
+                kdmTypes: ["xx","xx","xx","xx"]
+
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/name: task-exporter
+  name: task-exporter-configmap
+  namespace: monitor

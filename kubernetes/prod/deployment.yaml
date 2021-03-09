@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-exporter
+  labels:
+    app: task-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-exporter
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9116"
+        prometheus.io/scrape: "true"
+      labels:
+        app: task-exporter
+    spec:
+      containers:
+      - name: task-exporter
+        image: xxxxxxx/task-exporter:0.1.7
+        ports:
+          - containerPort: 9116
+            name: http
+            protocol: TCP
+        volumeMounts:
+          - mountPath: /app/config.yaml
+            name: config-volume
+            subPath: config.yaml
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 9116
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 9116
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        resources:
+          limits:
+            memory: 500M
+          requests:
+            memory: 50M
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: task-exporter-configmap
+          name: config-volume
