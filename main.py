@@ -1,9 +1,11 @@
 import prometheus_client
 import yaml
+import json
 from utils.get_api_status import *
 from utils.custom_collector import *
 from flask import Response, Flask
 from requests.auth import HTTPBasicAuth
+from urllib.parse import urlencode
 
 app = Flask(__name__)
 
@@ -19,22 +21,24 @@ def response():
         # for 2p_api_request
         if '2p_api_request' in value:
             phase1 = value["2p_api_request"]["phase1"]
+            # global phase2
             phase2 = value["2p_api_request"]["phase2"]
-            nonlocal phase2
 
-            if "auth_type" in phase1.keys():
-                token = get_token(phase1['method'], phase1['url'], phase1['headers'], phase1['body'],
+            if phase1["auth_type"] == "OAUTH2":
+                token = get_token(phase1['method'], phase1['url'], phase1['headers'], urlencode(phase1['body']),
                                   phase1['token_parser'], auth=HTTPBasicAuth(phase1['username'],
                                                                              phase1['password']))
             else:
-                token = get_token(phase1['method'], phase1['url'], phase1['headers'], phase1['body'],
+                token = get_token(phase1['method'], phase1['url'], phase1['headers'], json.dumps(phase1['body']),
                                   phase1['token_parser'])
 
             if token:
                 phase2['headers']['Authorization'] = 'Bearer {}'.format(token)
                 if phase2["method"] == "POST":
                     result.update({key: fetch_response(phase2["method"], phase2["url"], headers=phase2['headers'],
-                                                       body=phase2['body'])})
+                                                       data=json.dumps(phase2['body']))})
+                else:
+                    result.update({key: fetch_response(phase2["method"], phase2["url"], headers=phase2['headers'])})
             else:
                 result.update({key: 0})
 
@@ -56,6 +60,7 @@ if __name__ == '__main__':
     f.close()
 
     result = {}
+    # phase2 = {}
 
     # Start up the server to expose the metrics.
     port = config["global"]["port"]
